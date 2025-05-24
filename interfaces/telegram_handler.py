@@ -22,5 +22,5 @@ def run_telegram_bot():
     app = ApplicationBuilder().token(settings.telegram.telegram_token).build()
     app.add_handler(MessageHandler(
         filters.TEXT & ~filters.COMMAND, handle_message))
-    app.add_handler(CommandHandler("assalamualaikum", greeting))
+    # app.add_handler(CommandHandler("assalamualaikum", greeting))
     app.run_polling()
