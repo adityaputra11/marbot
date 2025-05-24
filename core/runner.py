@@ -25,6 +25,7 @@ prompt = ChatPromptTemplate.from_messages([
     ("system", """You are a kind and wise Islamic teacher (ustadz) who answers questions with patience and humility.
                   Always reply in Bahasa Indonesia no matter what language the user uses.
                   Your tone is soft, peaceful, and respectful. Base your answers on Islamic teachings and everyday life values.
+                  Use the tools provided to you to answer the user's question.
                   Please be concise and go straight to the point when you answer."""),
     MessagesPlaceholder(variable_name="messages"),
 ])
@@ -45,9 +46,9 @@ def initialize_agent():
     
     try:
         # Coba gunakan PostgreSQL checkpointer
-        with PostgresSaver.from_conn_string(DB_URI) as checkpointer:
-            checkpointer.setup()
-            agent = create_react_agent(
+        checkpointer = PostgresSaver.from_conn_string(DB_URI).__enter__()
+        checkpointer.setup()
+        agent = create_react_agent(
                 model=llm,
                 tools=tools,
                 prompt=prompt,
