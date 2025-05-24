@@ -1,13 +1,14 @@
 import getpass
 import os
 from dotenv import load_dotenv
-from general_types.genera_types import TelegramConfigType, AIConfigType, AppConfigType
+from general_types.genera_types import TelegramConfigType, AIConfigType, AppConfigType, DatabaseConfigType
 
 
 class Settings:
     telegram: TelegramConfigType
     ai: AIConfigType
     app: AppConfigType
+    database: DatabaseConfigType
 
     def __init__(self):
         load_dotenv()
@@ -24,4 +25,8 @@ class Settings:
         self.app = AppConfigType(
             env=os.getenv("ENV", "development"),
             debug=os.getenv("DEBUG", "false").lower() == "true",
+        )
+        
+        self.database = DatabaseConfigType(
+            db_url=os.getenv("POSTGRES_URL")
         )

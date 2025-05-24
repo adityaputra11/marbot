@@ -18,3 +18,8 @@ class AIConfigType:
 class AppConfigType:
     env: str
     debug: bool
+
+@dataclass
+class DatabaseConfigType:
+    db_url: str
+    
