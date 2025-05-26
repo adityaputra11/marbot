@@ -3,7 +3,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, Messa
 from telegram.constants import ChatAction
 from config.settings import Settings
 from core.chat_registry import user_registry
-from core.runner import run_agent_response
+from core.runner import run_agent_response, run_agent_response_with_agent
 
 settings = Settings()
 
@@ -11,12 +11,11 @@ settings = Settings()
 async def greeting(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(f'waalaikumasalam {update.effective_user.first_name}')
 
-
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_registry[str(update.effective_user.id)] = update.effective_chat.id
     text = update.message.text
     await update.message.chat.send_action(action=ChatAction.TYPING)
-    response = await run_agent_response(text, session_id=update.effective_user.id)
+    response = await run_agent_response_with_agent(text, session_id=update.effective_user.id, user_name=update.effective_user.first_name)
     await update.message.reply_text(response, parse_mode="MarkdownV2")
 
 

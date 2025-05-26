@@ -1,25 +1,18 @@
 # marbot/core/runner.py
-from langchain_deepseek import ChatDeepSeek
-from langchain.schema import HumanMessage, SystemMessage
-from langchain_core.messages import BaseMessage, AIMessage
+from langchain.schema import HumanMessage
+from langchain_core.messages import  AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
 from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.prebuilt import create_react_agent
 from config.settings import Settings
 from tools.schedule_tool import create_schedule
 import telegramify_markdown
-import psycopg2
-
+from general_types.agent_types import CustomState
+from llm.llm import LLM
+from agents.agent_graph import create_agent_graph
 settings = Settings()
 
-llm = ChatDeepSeek(
-    model="deepseek-chat",
-    temperature=0,
-    api_key=settings.ai.deepseek_api_key,
-    max_tokens=1000,
-)
-
+llm = LLM()
 # Perbaikan 1: Gunakan SystemMessage dengan format yang benar
 prompt = ChatPromptTemplate.from_messages([
     ("system", """You are a kind and wise Islamic teacher (ustadz) who answers questions with patience and humility.
@@ -49,10 +42,11 @@ def initialize_agent():
         checkpointer = PostgresSaver.from_conn_string(DB_URI).__enter__()
         checkpointer.setup()
         agent = create_react_agent(
-                model=llm,
+                model=llm.chat_deepseek(),
                 tools=tools,
                 prompt=prompt,
                 checkpointer=checkpointer,
+                state_schema=CustomState
             )
         print("✅ Agent initialized with PostgreSQL checkpointer")
         return True
@@ -66,7 +60,7 @@ def initialize_agent():
             checkpointer = MemorySaver()
             
             agent = create_react_agent(
-                model=llm,
+                model=llm.chat_deepseek(),
                 tools=tools,
                 prompt=prompt,
                 checkpointer=checkpointer,
@@ -80,7 +74,7 @@ def initialize_agent():
             try:
                 # Last resort: tanpa checkpointer
                 agent = create_react_agent(
-                    model=llm,
+                    model=llm.chat_deepseek(),
                     tools=tools,
                     prompt=prompt,
                 )
@@ -96,7 +90,7 @@ def initialize_agent():
 if not initialize_agent():
     raise RuntimeError("Failed to initialize agent")
 
-async def run_agent_response(user_prompt: str, session_id: str) -> str:
+async def run_agent_response(user_prompt: str, session_id: str, user_name: str) -> str:
     """
     Menjalankan agent dan mengembalikan response
     
@@ -108,19 +102,16 @@ async def run_agent_response(user_prompt: str, session_id: str) -> str:
         String response yang sudah diformat untuk Telegram
     """
     try:
-        # Perbaikan 4: Pastikan config yang benar
         config = {"configurable": {"thread_id": session_id}}
         
-        # Perbaikan 5: Format input yang benar untuk agent
-        response = await agent.ainvoke(
-            {"messages": [HumanMessage(content=user_prompt)]}, 
+        context = "Islamic knowledge"
+        response = await agent.ainvoke( 
+            {"messages": [HumanMessage(content=user_prompt)], "user_name": user_name, "context": context}, 
             config=config
         )
         
-        # Perbaikan 6: Extract AI message dengan lebih robust
         messages = response.get("messages", [])
         
-        # Cari AI message terakhir
         ai_message = None
         for msg in reversed(messages):
             if isinstance(msg, AIMessage):
@@ -128,18 +119,30 @@ async def run_agent_response(user_prompt: str, session_id: str) -> str:
                 break
         
         if ai_message and ai_message.content:
-            # Format untuk Telegram
             formatted_response = telegramify_markdown.markdownify(ai_message.content)
             return formatted_response
         else:
-            return "❌ Maaf, tidak ada respon dari sistem."
+            return telegramify_markdown.markdownify("❌ Maaf, tidak ada respon dari sistem.")   
             
     except Exception as e:
-        error_msg = f"❌ Terjadi kesalahan: {str(e)}"
         print(f"Error in run_agent_response: {e}")
-        return telegramify_markdown.markdownify(error_msg)
+        return telegramify_markdown.markdownify("Error Exception")
 
-# Perbaikan 7: Tambahkan fungsi untuk cleanup jika diperlukan
+async def run_agent_response_with_agent(user_prompt: str, session_id: str, user_name: str) -> str:
+    try:
+        config = {"configurable": {"thread_id": session_id}}
+        graph = create_agent_graph()    
+        response = await graph.ainvoke({"input": user_prompt,"user_name": user_name},config=config)
+        print(f"run_agent_response_with_agent: {response}")
+        if response["done"] is True:
+            return telegramify_markdown.markdownify(response["response"])
+        else:
+            return telegramify_markdown.markdownify("...")
+    except Exception as e:
+        print(f"Error in run_agent_response_with_agent: {e}")
+        return telegramify_markdown.markdownify("Error Exception")
+
+
 def cleanup():
     """Cleanup resources"""
     global checkpointer

@@ -8,10 +8,17 @@ class TelegramConfigType:
 
 
 @dataclass
+class WhatsappConfigType:
+    access_token: str
+    phone_number_id: str
+
+@dataclass
 class AIConfigType:
     open_api_key: Optional
     deepseek_api_key: Optional
     gemini_api_key: Optional
+    perplexity_api_key: Optional
+    together_api_key: Optional
 
 
 @dataclass
@@ -23,3 +30,7 @@ class AppConfigType:
 class DatabaseConfigType:
     db_url: str
     
+@dataclass
+class VectorStoreConfigType:
+    vectorstore_path: str
+    user_agent: str
