@@ -4,6 +4,7 @@ from langchain_perplexity import ChatPerplexity
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_together import ChatTogether
 from config.settings import Settings
+from langchain_litellm import ChatLiteLLM
 
 settings = Settings()
 class LLM:
@@ -20,10 +21,11 @@ class LLM:
       temperature=0,
       verbose=True
     )
-    self.openai = ChatOpenAI(
-      model="gpt-4.1-nano-2025-04-14",
+    self.openai = ChatLiteLLM(
+      model="gpt-4.1-mini",
       temperature=0,
-      api_key=settings.ai.open_api_key,
+      api_key="sk-piWDpNLR5HXbvq5COzpXRw",
+      api_base=settings.ai.litellm_api_base,
       verbose=True
     )
     self.perplexity = ChatPerplexity(
@@ -42,6 +44,13 @@ class LLM:
       model="llama-3.1-8b-instruct",
       temperature=0,
       api_key=settings.ai.together_api_key,
+      verbose=True
+    )
+    self.litellm = ChatLiteLLM(
+      model="gpt-4.1-mini",
+      temperature=0,
+      api_key=settings.ai.litellm_api_key,
+      api_base=settings.ai.litellm_api_base,
       verbose=True
     )
     

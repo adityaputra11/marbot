@@ -21,10 +21,12 @@ class Settings:
 
         self.ai = AIConfigType(
             deepseek_api_key=os.getenv("DEEPSEEK_API_KEY"),
-            open_api_key=os.getenv("OPEN_API_KEY"),
+            # open_api_key=os.getenv("OPEN_API_KEY"),
             gemini_api_key=os.getenv("GEMINI_API_KEY"),
             perplexity_api_key=os.getenv("PERPLEXITY_API_KEY"),
-            together_api_key=os.getenv("TOGETHER_API_KEY")
+            together_api_key=os.getenv("TOGETHER_API_KEY"),
+            litellm_api_key=os.getenv("LITELLM_API_KEY"),
+            litellm_api_base=os.getenv("LITELLM_API_BASE")  
         )
 
         self.app = AppConfigType(
@@ -33,7 +35,8 @@ class Settings:
         )
         
         self.database = DatabaseConfigType(
-            db_url=os.getenv("POSTGRES_URL")
+            db_url=os.getenv("POSTGRES_NEON_URL"),
+            second_db_url=os.getenv("POSTGRES_SUPABASE_URL") 
         )
 
         self.whatsapp = WhatsappConfigType(

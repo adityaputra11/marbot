@@ -14,11 +14,13 @@ class WhatsappConfigType:
 
 @dataclass
 class AIConfigType:
-    open_api_key: Optional
+    # open_api_key: Optional
     deepseek_api_key: Optional
     gemini_api_key: Optional
     perplexity_api_key: Optional
     together_api_key: Optional
+    litellm_api_key: Optional
+    litellm_api_base: Optional
 
 
 @dataclass
@@ -29,6 +31,7 @@ class AppConfigType:
 @dataclass
 class DatabaseConfigType:
     db_url: str
+    second_db_url: str
     
 @dataclass
 class VectorStoreConfigType:

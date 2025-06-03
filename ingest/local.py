@@ -10,10 +10,10 @@ settings = Settings()
 
 def create_vector_store():
     # Inisialisasi embedding model dari HuggingFace
-    embeddings = OpenAIEmbeddings(
-       model="text-embedding-3-small",
-       api_key=settings.ai.open_api_key
-    )
+    # embeddings = OpenAIEmbeddings(
+    #    model="text-embedding-3-small",
+    #    api_key=settings.ai.open_api_key
+    # )
     # Load dan split dokumen dari Wikipedia
     loader = WebBaseLoader("https://en.wikipedia.org/wiki/Artificial_intelligence")
     documents = loader.load()
