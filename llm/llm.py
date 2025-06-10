@@ -1,3 +1,4 @@
+import os
 from langchain_deepseek import ChatDeepSeek
 from langchain_openai import ChatOpenAI
 from langchain_perplexity import ChatPerplexity
@@ -21,11 +22,11 @@ class LLM:
       temperature=0,
       verbose=True
     )
-    self.openai = ChatLiteLLM(
+    self.openai = ChatOpenAI(
       model="gpt-4.1-mini",
       temperature=0,
-      api_key="sk-piWDpNLR5HXbvq5COzpXRw",
-      api_base=settings.ai.litellm_api_base,
+      api_key=os.getenv("OPENAI_API_KEY"),
+      streaming=True,
       verbose=True
     )
     self.perplexity = ChatPerplexity(

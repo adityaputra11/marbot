@@ -1,12 +1,11 @@
 from bot.telegram_bot import run_telegram_bot
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-from ingest.local import create_vector_store,search_similar_docs    
-import asyncio
+from config.vdb import generate_from_file 
 
 def main():
-    # create_vector_store()
-  run_telegram_bot()
+    # generate_from_file("data/rest-in-peace.txt","marbot_collection")
+    run_telegram_bot()
     
     
 if __name__ == "__main__":

@@ -6,10 +6,10 @@ from config.settings import Settings
 from core.runner import run_agent_response_with_agent
 from services.auth.AuthService import AuthService
 import asyncio
+import random
 
 settings = Settings()
 auth_service = AuthService()
-
 
 async def registerOrLogin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     username = update.message.from_user.username
@@ -24,18 +24,28 @@ async def registerOrLogin(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     else:
         await update.message.reply_text(f'{result["message"]}')
 
+LOADING_QUOTES = [
+    "🕊️ \"Sesungguhnya sesudah kesulitan itu ada kemudahan.\" (QS. Al-Insyirah: 6)",
+    "⏳ \"Sabar adalah kunci kemenangan.\" (HR. Bukhari)",
+    "📚 \"Barangsiapa menempuh jalan untuk mencari ilmu, Allah akan mudahkan jalannya ke surga.\" (HR. Muslim)",
+    "💭 \"Diam itu bagian dari hikmah, tetapi sedikit orang yang melakukannya.\" (HR. Al-Baihaqi)",
+    "🤲 \"Allah bersama orang-orang yang sabar.\" (QS. Al-Baqarah: 153)",
+    "📝 \"Ilmu itu didapat dengan belajar, dan kesabaran adalah kendaraannya.\"",
+    "🔍 \"Marbot sedang mencari jawaban terbaik dengan hati-hati...\"",
+]
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     chat_id = update.effective_chat.id
 
-    sent_message = await context.bot.send_message(chat_id=chat_id, text="Marbot lagi memproses...")
+    sent_message = await context.bot.send_message(chat_id=chat_id, text=f"🧠 Sabar, Marbot lagi mikir...\n {random.choice(LOADING_QUOTES)}")
     await update.message.chat.send_action(action=ChatAction.TYPING)
 
     response_task = asyncio.create_task(
         run_agent_response_with_agent(text, session_id=update.effective_user.id, user_name=update.effective_user.first_name)
     )
     async def send_loading_hint():
-        await asyncio.sleep(5) 
+        await asyncio.sleep(3) 
         if not response_task.done():
             await context.bot.send_message(chat_id=chat_id, text="Bentar dikit ya... masih nyari jawaban terbaik")
     loading_hint_task = asyncio.create_task(send_loading_hint())
@@ -119,7 +129,23 @@ async def post_init(application):
     ]
     await application.bot.set_my_commands(commands)
 
-async def handle_message2(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+async def streaming_response(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Kirim pesan awal
+    message = await update.message.reply_text("Sedang mengetik...")
+
+    # Simulasi streaming (misal model LLM keluarkan token bertahap)
+    tokens = ["Halo", ", ", "ini ", "contoh ", "streaming ", "jawaban ", "di Telegram Bot."]
+    text_so_far = ""
+
+    for token in tokens:
+        text_so_far += token
+        # Edit pesan dengan hasil bertahap
+        await message.edit_text(text_so_far)
+        # Delay supaya tidak spam API (atur sesuai kebutuhan)
+        await asyncio.sleep(0.5)
+
+
     chat_id = update.effective_chat.id
     
     # Kirim pesan pertama
